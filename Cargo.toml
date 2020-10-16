@@ -1,0 +1,13 @@
+[package]
+name = "zerobot-rs"
+version = "0.1.0"
+authors = ["zoewithabang <zoewithabang@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+dotenv = "0.15"
+env_logger = "0.7"
+lazy_static = "1.4"
+log = "0.4"
+serenity = { git = "https://github.com/serenity-rs/serenity", rev = "a1b3c8d", default-features = false, features = ["client", "gateway", "rustls_backend", "model"] }
+tokio = { version = "0.2", features = ["macros"] }
