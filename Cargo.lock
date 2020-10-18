@@ -178,6 +178,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "134951f4028bdadb9b84baf4232681efbf277da25144b9b0ad65df75946c422b"
 
 [[package]]
+name = "easy_reader"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "11526c477e3069d639add48e44d896f9d3eaed7be87b299d148c9171638b35f1"
+dependencies = [
+ "fnv",
+ "rand",
+]
+
+[[package]]
 name = "encoding_rs"
 version = "0.8.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1440,9 +1450,11 @@ name = "zerobot-rs"
 version = "0.1.0"
 dependencies = [
  "dotenv",
+ "easy_reader",
  "env_logger",
  "lazy_static",
  "log",
+ "regex",
  "serenity",
  "tokio",
 ]
