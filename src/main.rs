@@ -1,4 +1,6 @@
 mod commands;
+mod cytube;
+mod tasks;
 
 use dotenv;
 use lazy_static::lazy_static;
@@ -12,6 +14,8 @@ use std::env;
 
 lazy_static! {
     static ref BOT_PREFIX: String = env::var("BOT_PREFIX").expect("BOT_PREFIX missing!");
+    static ref CYTUBE_LOG: String = env::var("CYTUBE_LOG").expect("CYTUBE_LOG missing!");
+    static ref CYTUBE_URL: String = env::var("CYTUBE_URL").expect("CYTUBE_URL missing!");
     static ref DISCORD_TOKEN: String = env::var("DISCORD_TOKEN").expect("DISCORD_TOKEN missing!");
 }
 
@@ -34,8 +38,12 @@ impl EventHandler for Handler {
         };
     }
 
-    async fn ready(&self, _: Context, ready: Ready) {
+    async fn ready(&self, context: Context, ready: Ready) {
         log::info!("{} is connected!", ready.user.name);
+
+        if let Err(e) = tasks::cytube_now_playing_presence(&context, &CYTUBE_LOG).await {
+            log::error!("CyTube now playing presence error: {:?}", e);
+        };
     }
 }
 
