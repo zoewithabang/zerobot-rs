@@ -6,12 +6,12 @@ use dotenv;
 use lazy_static::lazy_static;
 use log;
 use serenity::{
-    async_trait,
     model::{channel::Message, gateway::Ready},
     prelude::*,
 };
 use std::env;
 
+// TODO: single config object instead for ease of passing around?
 lazy_static! {
     static ref BOT_PREFIX: String = env::var("BOT_PREFIX").expect("BOT_PREFIX missing!");
     static ref CYTUBE_LOG: String = env::var("CYTUBE_LOG").expect("CYTUBE_LOG missing!");
@@ -21,7 +21,7 @@ lazy_static! {
 
 struct Handler;
 
-#[async_trait]
+#[serenity::async_trait]
 impl EventHandler for Handler {
     async fn message(&self, context: Context, message: Message) {
         if !message.content.starts_with(&BOT_PREFIX.as_str()) {
@@ -31,6 +31,7 @@ impl EventHandler for Handler {
         let command = message.content.strip_prefix(&BOT_PREFIX.as_str()).unwrap();
 
         if let Err(e) = match command {
+            "np" => commands::now_playing(context, message, &CYTUBE_LOG, &CYTUBE_URL).await,
             "ping" => commands::ping(context, message).await,
             _ => Ok(()),
         } {

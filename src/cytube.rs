@@ -1,6 +1,10 @@
 use easy_reader::EasyReader;
 use regex::Regex;
-use std::{fs::File, io::Error as IoError};
+use std::{
+    fmt::{Display, Formatter, Result as FmtResult},
+    fs::File,
+    io::Error as IoError,
+};
 
 pub enum MediaService {
     SoundCloud,
@@ -14,6 +18,16 @@ pub struct CytubeMedia {
     pub id: String,
 }
 
+impl Display for MediaService {
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+        match *self {
+            MediaService::SoundCloud => write!(f, "SoundCloud"),
+            MediaService::YouTube => write!(f, "YouTube"),
+            MediaService::Unknown => write!(f, "Website"),
+        }
+    }
+}
+
 impl CytubeMedia {
     pub fn new(title: String, service_string: String, id: String) -> CytubeMedia {
         let service = match service_string.as_str() {
@@ -23,6 +37,14 @@ impl CytubeMedia {
         };
 
         CytubeMedia { title, service, id }
+    }
+
+    pub fn get_url(&self) -> String {
+        match self.service {
+            MediaService::SoundCloud => self.id.clone(),
+            MediaService::YouTube => format!("https://www.youtube.com/watch?v={}", self.id),
+            MediaService::Unknown => self.id.clone(),
+        }
     }
 }
 
