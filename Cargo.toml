@@ -5,6 +5,7 @@ authors = ["zoewithabang <zoewithabang@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+backoff = { version = "0.2", features = ["tokio"] }
 dotenv = "0.15"
 easy_reader = "0.5"
 env_logger = "0.7"

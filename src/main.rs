@@ -2,6 +2,7 @@ mod commands;
 mod cytube;
 mod tasks;
 
+use backoff::{future::FutureOperation, ExponentialBackoff};
 use dotenv;
 use lazy_static::lazy_static;
 use log;
@@ -39,12 +40,21 @@ impl EventHandler for Handler {
         };
     }
 
+    // Note: `let _ =` is used to discard Results where we're not using backoff's permanent errors
     async fn ready(&self, context: Context, ready: Ready) {
         log::info!("{} is connected!", ready.user.name);
 
-        if let Err(e) = tasks::cytube_now_playing_presence(&context, &CYTUBE_LOG).await {
-            log::error!("CyTube now playing presence error: {:?}", e);
-        };
+        let _ = (|| async {
+            tasks::cytube_now_playing_presence(&context, &CYTUBE_LOG)
+                .await
+                .map_err(|e| {
+                    log::error!("CyTube now playing presence error: {:?}", e);
+
+                    e.into()
+                })
+        })
+        .retry(ExponentialBackoff::default())
+        .await;
     }
 }
 
