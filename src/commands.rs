@@ -1,6 +1,53 @@
+mod commands;
+mod help;
+
 use crate::cytube;
 use serenity::{model::channel::Message, prelude::*};
 use std::error::Error;
+
+pub async fn commands(
+    context: Context,
+    message: Message,
+    bot_prefix: &str,
+) -> Result<(), Box<dyn Error>> {
+    message
+        .channel_id
+        .send_message(&context.http, |create_message| {
+            create_message.embed(|create_embed| {
+                commands::commands(create_embed, bot_prefix);
+                commands::help(create_embed, bot_prefix);
+                commands::now_playing(create_embed, bot_prefix);
+                commands::ping(create_embed, bot_prefix);
+
+                // TODO: move the colour to config
+                create_embed.colour((250, 207, 255))
+            })
+        })
+        .await?;
+
+    Ok(())
+}
+
+pub async fn help(
+    context: Context,
+    message: Message,
+    bot_prefix: &str,
+) -> Result<(), Box<dyn Error>> {
+    let text = message.content.split_whitespace().skip(1).next();
+
+    message
+        .channel_id
+        .send_message(&context.http, |create_message| match text {
+            Some("commands") => help::commands(create_message, bot_prefix),
+            Some("help") | None => help::help(create_message, bot_prefix),
+            Some("np") => help::now_playing(create_message, bot_prefix),
+            Some("ping") => help::ping(create_message, bot_prefix),
+            _ => help::unknown(create_message, bot_prefix),
+        })
+        .await?;
+
+    Ok(())
+}
 
 pub async fn now_playing(
     context: Context,

@@ -29,9 +29,17 @@ impl EventHandler for Handler {
             return;
         }
 
-        let command = message.content.strip_prefix(&BOT_PREFIX.as_str()).unwrap();
+        let command = message
+            .content
+            .strip_prefix(&BOT_PREFIX.as_str())
+            .unwrap()
+            .split_whitespace()
+            .next()
+            .unwrap();
 
         if let Err(e) = match command {
+            "commands" => commands::commands(context, message, &BOT_PREFIX).await,
+            "help" => commands::help(context, message, &BOT_PREFIX).await,
             "np" => commands::now_playing(context, message, &CYTUBE_LOG, &CYTUBE_URL).await,
             "ping" => commands::ping(context, message).await,
             _ => Ok(()),
