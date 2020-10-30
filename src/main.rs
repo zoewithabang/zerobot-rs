@@ -1,7 +1,9 @@
 mod commands;
+mod config;
 mod cytube;
 mod tasks;
 
+use crate::config::Config;
 use backoff::{future::FutureOperation, ExponentialBackoff};
 use lazy_static::lazy_static;
 use serenity::{
@@ -10,12 +12,14 @@ use serenity::{
 };
 use std::env;
 
-// TODO: single config object instead for ease of passing around?
 lazy_static! {
-    static ref BOT_PREFIX: String = env::var("BOT_PREFIX").expect("BOT_PREFIX missing!");
-    static ref CYTUBE_LOG: String = env::var("CYTUBE_LOG").expect("CYTUBE_LOG missing!");
-    static ref CYTUBE_URL: String = env::var("CYTUBE_URL").expect("CYTUBE_URL missing!");
-    static ref DISCORD_TOKEN: String = env::var("DISCORD_TOKEN").expect("DISCORD_TOKEN missing!");
+    static ref CONFIG: Config = Config::new(
+        env::var("BOT_COLOUR").expect("BOT_COLOUR missing!"),
+        env::var("BOT_PREFIX").expect("BOT_PREFIX missing!"),
+        env::var("CYTUBE_LOG").expect("CYTUBE_LOG missing!"),
+        env::var("CYTUBE_URL").expect("CYTUBE_URL missing!"),
+        env::var("DISCORD_TOKEN").expect("DISCORD_TOKEN missing!"),
+    );
 }
 
 struct Handler;
@@ -23,22 +27,22 @@ struct Handler;
 #[serenity::async_trait]
 impl EventHandler for Handler {
     async fn message(&self, context: Context, message: Message) {
-        if !message.content.starts_with(&BOT_PREFIX.as_str()) {
+        if !message.content.starts_with(&CONFIG.bot_prefix.as_str()) {
             return;
         }
 
         let command = message
             .content
-            .strip_prefix(&BOT_PREFIX.as_str())
+            .strip_prefix(&CONFIG.bot_prefix.as_str())
             .unwrap()
             .split_whitespace()
             .next()
             .unwrap();
 
         if let Err(e) = match command {
-            "commands" => commands::commands(context, message, &BOT_PREFIX).await,
-            "help" => commands::help(context, message, &BOT_PREFIX).await,
-            "np" => commands::now_playing(context, message, &CYTUBE_LOG, &CYTUBE_URL).await,
+            "commands" => commands::commands(context, message, &CONFIG).await,
+            "help" => commands::help(context, message, &CONFIG).await,
+            "np" => commands::now_playing(context, message, &CONFIG).await,
             "ping" => commands::ping(context, message).await,
             _ => Ok(()),
         } {
@@ -51,7 +55,7 @@ impl EventHandler for Handler {
         log::info!("{} is connected!", ready.user.name);
 
         let _ = (|| async {
-            tasks::cytube_now_playing_presence(&context, &CYTUBE_LOG)
+            tasks::cytube_now_playing_presence(&context, &CONFIG.cytube_log)
                 .await
                 .map_err(|e| {
                     log::error!("CyTube now playing presence error: {:?}", e);
@@ -69,7 +73,7 @@ async fn main() {
     dotenv::dotenv().ok();
     env_logger::init();
 
-    let mut client = Client::builder(&DISCORD_TOKEN.as_str())
+    let mut client = Client::builder(&CONFIG.discord_token.as_str())
         .event_handler(Handler)
         .await
         .expect("Unable to create client");
