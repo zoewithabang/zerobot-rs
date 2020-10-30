@@ -1,6 +1,7 @@
 mod command_info;
 mod help;
 
+use crate::config::Config;
 use crate::cytube;
 use serenity::{model::channel::Message, prelude::*};
 use std::error::Error;
@@ -8,19 +9,18 @@ use std::error::Error;
 pub async fn commands(
     context: Context,
     message: Message,
-    bot_prefix: &str,
+    config: &Config,
 ) -> Result<(), Box<dyn Error>> {
     message
         .channel_id
         .send_message(&context.http, |create_message| {
             create_message.embed(|create_embed| {
-                command_info::commands(create_embed, bot_prefix);
-                command_info::help(create_embed, bot_prefix);
-                command_info::now_playing(create_embed, bot_prefix);
-                command_info::ping(create_embed, bot_prefix);
+                command_info::commands(create_embed, &config.bot_prefix);
+                command_info::help(create_embed, &config.bot_prefix);
+                command_info::now_playing(create_embed, &config.bot_prefix);
+                command_info::ping(create_embed, &config.bot_prefix);
 
-                // TODO: move the colour to config
-                create_embed.colour((250, 207, 255))
+                create_embed.colour(config.bot_colour)
             })
         })
         .await?;
@@ -31,18 +31,18 @@ pub async fn commands(
 pub async fn help(
     context: Context,
     message: Message,
-    bot_prefix: &str,
+    config: &Config,
 ) -> Result<(), Box<dyn Error>> {
     let text = message.content.split_whitespace().nth(2);
 
     message
         .channel_id
         .send_message(&context.http, |create_message| match text {
-            Some("commands") => help::commands(create_message, bot_prefix),
-            Some("help") | None => help::help(create_message, bot_prefix),
-            Some("np") => help::now_playing(create_message, bot_prefix),
-            Some("ping") => help::ping(create_message, bot_prefix),
-            _ => help::unknown(create_message, bot_prefix),
+            Some("commands") => help::commands(create_message, config),
+            Some("help") | None => help::help(create_message, config),
+            Some("np") => help::now_playing(create_message, config),
+            Some("ping") => help::ping(create_message, config),
+            _ => help::unknown(create_message, config),
         })
         .await?;
 
@@ -52,10 +52,9 @@ pub async fn help(
 pub async fn now_playing(
     context: Context,
     message: Message,
-    cytube_log: &str,
-    cytube_url: &str,
+    config: &Config,
 ) -> Result<(), Box<dyn Error>> {
-    let cytube_log = cytube_log.to_string();
+    let cytube_log = config.cytube_log.to_string();
 
     if let Some(media) =
         tokio::task::spawn_blocking(move || cytube::get_now_playing(&cytube_log)).await??
@@ -70,14 +69,13 @@ pub async fn now_playing(
                             "[{}]({}) || [Tune in~]({}?queue={})",
                             &media.service,
                             &media.get_url(),
-                            &cytube_url,
+                            &config.cytube_url,
                             &media.id,
                         ),
                         false,
                     );
 
-                    // TODO: move the colour to config
-                    create_embed.colour((250, 207, 255))
+                    create_embed.colour(config.bot_colour)
                 })
             })
             .await?;
