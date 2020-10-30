@@ -1,4 +1,4 @@
-mod commands;
+mod command_info;
 mod help;
 
 use crate::cytube;
@@ -14,10 +14,10 @@ pub async fn commands(
         .channel_id
         .send_message(&context.http, |create_message| {
             create_message.embed(|create_embed| {
-                commands::commands(create_embed, bot_prefix);
-                commands::help(create_embed, bot_prefix);
-                commands::now_playing(create_embed, bot_prefix);
-                commands::ping(create_embed, bot_prefix);
+                command_info::commands(create_embed, bot_prefix);
+                command_info::help(create_embed, bot_prefix);
+                command_info::now_playing(create_embed, bot_prefix);
+                command_info::ping(create_embed, bot_prefix);
 
                 // TODO: move the colour to config
                 create_embed.colour((250, 207, 255))
@@ -33,7 +33,7 @@ pub async fn help(
     message: Message,
     bot_prefix: &str,
 ) -> Result<(), Box<dyn Error>> {
-    let text = message.content.split_whitespace().skip(1).next();
+    let text = message.content.split_whitespace().nth(2);
 
     message
         .channel_id
