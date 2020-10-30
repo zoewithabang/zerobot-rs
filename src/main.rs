@@ -3,9 +3,7 @@ mod cytube;
 mod tasks;
 
 use backoff::{future::FutureOperation, ExponentialBackoff};
-use dotenv;
 use lazy_static::lazy_static;
-use log;
 use serenity::{
     model::{channel::Message, gateway::Ready},
     prelude::*,

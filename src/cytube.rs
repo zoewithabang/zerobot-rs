@@ -60,11 +60,11 @@ pub fn get_now_playing(cytube_log: &str) -> Result<Option<CytubeMedia>, IoError>
     while let Some(line) = reader.prev_line()? {
         attempts += 1;
 
-        if let Some(foo) = regex.captures(&line) {
+        if let Some(captures) = regex.captures(&line) {
             return Ok(Some(CytubeMedia::new(
-                foo[1].to_string(),
-                foo[2].to_string(),
-                foo[3].to_string(),
+                captures[1].to_string(),
+                captures[2].to_string(),
+                captures[3].to_string(),
             )));
         }
 

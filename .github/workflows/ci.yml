@@ -1,0 +1,97 @@
+name: GitHub Actions CI
+on: [pull_request]
+
+jobs:
+  stable:
+    name: stable
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Build
+        run: cargo build --verbose
+
+      - name: Test
+        run: cargo test --verbose
+
+  beta:
+    name: beta
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: beta
+          override: true
+
+      - name: Build
+        run: cargo build --verbose
+
+      - name: Test
+        run: cargo test --verbose
+
+  nightly:
+    name: nightly
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+
+      - name: Build
+        run: cargo build --verbose
+
+      - name: Test
+        run: cargo test --verbose
+
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
+
+      - name: Cargo format check
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy -- -D warnings
