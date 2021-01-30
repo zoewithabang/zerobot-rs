@@ -1,5 +1,5 @@
 use crate::cytube;
-use serenity::{model::gateway::Activity, prelude::*};
+use serenity::prelude::*;
 use std::io::Error as IoError;
 use tokio::time::{self, Duration};
 
@@ -16,9 +16,7 @@ pub async fn cytube_now_playing_presence(
         if let Some(media) =
             tokio::task::spawn_blocking(move || cytube::get_now_playing(&cytube_log)).await??
         {
-            context
-                .set_activity(Activity::listening(&media.title))
-                .await;
+            context.set_activity(media.get_activity()).await;
         }
     }
 }
