@@ -8,9 +8,9 @@ edition = "2018"
 backoff = { version = "0.2", features = ["tokio"] }
 dotenv = "0.15"
 easy_reader = "0.5"
-env_logger = "0.7"
+env_logger = "0.8"
 lazy_static = "1.4"
 log = "0.4"
 regex = "1.4"
-serenity = { git = "https://github.com/serenity-rs/serenity", rev = "a1b3c8d", default-features = false, features = ["client", "gateway", "rustls_backend", "model"] }
-tokio = { version = "0.2", features = ["macros"] }
+serenity = { version = "0.10", default-features = false, features = ["client", "gateway", "rustls_backend", "model"] }
+tokio = { version = "1.1", features = ["macros", "rt-multi-thread"] }
